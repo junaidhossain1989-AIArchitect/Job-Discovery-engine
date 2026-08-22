@@ -3,14 +3,14 @@ import dotenv from 'dotenv';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { ScrapedJob } from './scraperService';
 
-// Loads .env from root or discovery-engine/
 dotenv.config();
 dotenv.config({ path: path.resolve(process.cwd(), 'discovery-engine', '.env') });
 
 export interface JobEvaluation {
   jobTitle: string;
   company: string;
-  fitScore: number; // 0 to 100
+  jobUrl: string; // <--- Added jobUrl
+  fitScore: number;
   decision: 'APPLY' | 'CONSIDER' | 'SKIP';
   summaryReason: string;
   matchingSkills: string[];
@@ -24,7 +24,7 @@ export async function evaluateJobFit(
 ): Promise<JobEvaluation> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is missing from environment variables. Check your .env file.');
+    throw new Error('GEMINI_API_KEY is missing from environment variables.');
   }
 
   const ai = new GoogleGenerativeAI(apiKey);
@@ -57,6 +57,7 @@ Return JSON in this EXACT structure:
 {
   "jobTitle": "${job.title}",
   "company": "${job.company}",
+  "jobUrl": "${job.url}",
   "fitScore": number (0 to 100),
   "decision": "APPLY" | "CONSIDER" | "SKIP",
   "summaryReason": "1-2 concise sentences explaining the verdict",
@@ -78,6 +79,7 @@ Return JSON in this EXACT structure:
     return {
       jobTitle: job.title,
       company: job.company,
+      jobUrl: job.url || '#',
       fitScore: 0,
       decision: 'SKIP',
       summaryReason: `Evaluation failed: ${error.message}`,
