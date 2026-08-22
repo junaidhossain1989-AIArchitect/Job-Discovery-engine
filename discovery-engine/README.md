@@ -117,6 +117,59 @@ Job-Discovery-engine/
     ├── emailService.ts
     ├── index.ts
     └── scraperService.ts
+Here is your comprehensive production-readiness roadmap. Transforming this system into a production-grade, configurable product tomorrow requires decoupling code from configuration, securing infrastructure, and adding robust logging and error handling.
 
+---
+
+### Production-Readiness Action Items
+
+#### 1. Configuration & Prompt Externalization
+
+* **Externalize Candidate Profiles:** Move hardcoded profile paths into environment variables or a `/config` directory, allowing dynamic switching between multiple resumes/profiles (e.g., `candidateProfile.json`, `candidateProfile_dev.json`).
+* **Prompt Versioning:** Extract the Gemini system prompt from `aiEvaluator.ts` into a standalone text/JSON template file (e.g., `discovery-engine/prompts/evaluationPrompt.v1.txt`). This allows prompt updates, tuning, and A/B testing without redeploying code.
+* **Configurable Thresholds:** Move matching criteria—such as the minimum match score (e.g., `FIT_SCORE_THRESHOLD=80`) and email dispatch limits—to `.env` variables.
+
+#### 2. Infrastructure & Scheduling
+
+* **Automated Runner / Orchestration:** Replace manual terminal execution with a robust scheduler:
+* **Option A (n8n):** Create an n8n workflow with a Cron Node that calls an HTTP Webhook or executes the Node process, capturing logs and triggering secondary notifications (Slack/Telegram).
+* **Option B (PM2 / Cloud Cron):** Deploy via PM2 (`pm2 start ecosystem.config.js`) or set up a daily GitHub Actions workflow / AWS EventBridge rule.
+
+
+* **Custom Domain Email Sending:** In Resend, verify your domain DNS records (`SPF`, `DKIM`) to switch from `onboarding@resend.dev` to `notifications@yourdomain.com` for high inbox deliverability.
+
+#### 3. Error Handling, Resilience & Rate Limiting
+
+* **API Rate Limiting & Backoff:** Wrap calls to the Gemini API and web scrapers with retry logic and exponential backoff to gracefully handle rate limits or network drops.
+* **Database / State Persistence:** Add a lightweight database (e.g., SQLite or PostgreSQL) or local cache file to store scraped `jobUrl` hash signatures. This prevents evaluating or emailing duplicate job listings on subsequent runs.
+* **Structured Logging:** Replace `console.log` statements with a production logging library like `pino` or `winston` to generate structured JSON logs, enabling seamless integration with monitoring tools (e.g., Datadog, Better Stack).
+
+#### 4. Chrome Extension Integration & Security
+
+* **CORS & API Security:** If your local scraper (`http://localhost:3001`) or orchestrator needs to communicate directly with your custom Chrome extension, set up proper CORS headers and token authentication (e.g., `x-api-key`).
+* **Environment Secret Audit:** Ensure `.env` is fully ignored in git and prepare production deployment secrets in your host environment (e.g., Docker environment variables or GitHub Secrets).
+
+---
+
+### Tomorrow's Step-by-Step Execution Plan
+
+**Phase 1: Config & Prompt Extraction**
+
+1. Create `discovery-engine/prompts/v1.txt` and move the prompt template string out of `aiEvaluator.ts`.
+2. Update `aiEvaluator.ts` to read the prompt template from file and interpolate variables dynamically.
+3. Update `.env.example` with all new configurable parameters (`FIT_SCORE_THRESHOLD`, `PROMPT_VERSION`, `PORTAL_TIMEOUT`).
+
+**Phase 2: Persistence & Deduplication**
+
+1. Implement a simple JSON file or SQLite table (`processedJobs.json`) to record evaluated job IDs/URLs.
+2. Filter out previously evaluated jobs *before* invoking the Gemini API to conserve API usage and avoid duplicate email alerts.
+
+**Phase 3: Scheduling & Deployment**
+
+1. Set up your runner mechanism (n8n workflow or PM2/GitHub Actions).
+2. Configure domain DNS for Resend API sending.
+3. Perform an end-to-end dry run to confirm execution, prompt reading, deduplication, and email delivery.
+
+Are you planning to deploy this runner on a cloud server (e.g., AWS, Render, VPS) or keep it running on your local machine?
 ```
 
