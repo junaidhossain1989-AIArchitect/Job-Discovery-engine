@@ -1,0 +1,13 @@
+{
+  "candidate": {
+    "name": "Junaid",
+    "email": "your-email@example.com",
+    "targetRole": "Solution Architect",
+    "targetLocation": "Perth WA",
+    "masterResume": "Senior Solution Architect with 12+ years of experience designing enterprise cloud platforms, microservices, AWS architectures, TypeScript/Node.js systems, and Docker/Kubernetes setups. Proficient in TOGAF, system integrations, security compliance, and leading technical teams. Based in Perth, Western Australia."
+  },
+  "preferences": {
+    "minFitScoreToAlert": 70,
+    "maxJobsPerPortal": 3
+  }
+}
