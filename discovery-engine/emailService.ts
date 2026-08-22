@@ -1,13 +1,13 @@
 import { Resend } from 'resend';
 import path from 'path';
 import dotenv from 'dotenv';
-dotenv.config();
 import type { JobEvaluation } from './aiEvaluator';
 
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+// Loads .env from process execution root or discovery-engine directory
+dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), 'discovery-engine', '.env') });
 
 export async function sendJobDigestEmail(evaluations: JobEvaluation[]): Promise<void> {
-  // Filter out non-actionable matches
   const highFitJobs = evaluations.filter((item) => item.decision !== 'SKIP');
 
   if (highFitJobs.length === 0) {
@@ -17,7 +17,7 @@ export async function sendJobDigestEmail(evaluations: JobEvaluation[]): Promise<
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    throw new Error('RESEND_API_KEY is missing from environment variables in discovery-engine/.env');
+    throw new Error('RESEND_API_KEY is missing from environment variables. Check your .env file.');
   }
 
   const resend = new Resend(apiKey);
@@ -81,7 +81,7 @@ export async function sendJobDigestEmail(evaluations: JobEvaluation[]): Promise<
     console.log(`[Email Service] Dispatching digest to ${destination} via Resend API...`);
 
     const { data, error } = await resend.emails.send({
-      from: 'Job Discovery <onboarding@resend.dev>', // Uses Resend testing domain; replace with custom domain in production
+      from: 'Job Discovery <onboarding@resend.dev>',
       to: [destination],
       subject: `🎯 ${highFitJobs.length} New Job Match${highFitJobs.length > 1 ? 'es' : ''} Discovered`,
       html: htmlContent,

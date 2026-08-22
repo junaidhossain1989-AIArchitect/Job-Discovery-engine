@@ -1,9 +1,11 @@
+import path from 'path';
 import dotenv from 'dotenv';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { ScrapedJob } from './scraperService';
 
-// Automatically loads .env from process.cwd()
+// Loads .env from root or discovery-engine/
 dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), 'discovery-engine', '.env') });
 
 export interface JobEvaluation {
   jobTitle: string;
@@ -27,7 +29,7 @@ export async function evaluateJobFit(
 
   const ai = new GoogleGenerativeAI(apiKey);
   const model = ai.getGenerativeModel({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-3.6-flash',
     generationConfig: {
       responseMimeType: 'application/json'
     }
