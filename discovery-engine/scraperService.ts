@@ -93,7 +93,7 @@ app.post('/scrape', async (req: Request, res: Response) => {
         await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
         await page.waitForTimeout(2000);
 
-        const foundCards = await page.evaluate(({ portalConfig }) => {
+        const foundCards = await page.evaluate(({ portalConfig }: { portalConfig: PortalConfig }) => {
           const cards = Array.from(document.querySelectorAll(portalConfig.selectors.cardContainer));
           const results: { title: string; company: string; location: string; url: string }[] = [];
 
@@ -109,7 +109,7 @@ app.post('/scrape', async (req: Request, res: Response) => {
             let url = anchorEl?.href || '';
 
             if (url.includes('?')) {
-              url = url.split('?')[0];
+              url = url.split('?')[0] ?? url;
             }
 
             if (title && url) {
@@ -128,7 +128,7 @@ app.post('/scrape', async (req: Request, res: Response) => {
             const jobPage = await context.newPage();
             await jobPage.goto(item.url, { waitUntil: 'domcontentloaded', timeout: 20000 });
 
-            const description = await jobPage.evaluate((descSelector) => {
+            const description = await jobPage.evaluate((descSelector: string) => {
               const el = document.querySelector(descSelector) || document.body;
               return (el as HTMLElement).innerText.replace(/\s+/g, ' ').substring(0, 3000);
             }, portal.selectors.description);

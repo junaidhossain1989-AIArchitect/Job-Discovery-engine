@@ -9,7 +9,7 @@
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
     "target": "esnext",
-    "types": [],
+    "types": ["node"],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -41,7 +41,7 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
 
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   }

@@ -1,10 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import { runScrapers, type ScrapedJob } from './scraperService';
-import { evaluateJobFit, type JobEvaluation } from './aiEvaluator';
-import { sendJobDigestEmail } from './emailService';
-import { getProcessedUrls, markUrlsAsProcessed } from './cacheService';
+import { runScrapers, type ScrapedJob } from './scraperService.js';
+import { evaluateJobFit, type JobEvaluation } from './aiEvaluator.js';
+import { sendJobDigestEmail } from './emailService.js';
+import { getProcessedUrls, markUrlsAsProcessed } from './cacheService.js';
 
 dotenv.config();
 

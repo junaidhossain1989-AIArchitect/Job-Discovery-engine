@@ -29,3 +29,6 @@ Thumbs.db
 reports/
 tmp/
 temp/
+
+# Prevent ignoring processedJobs.json if you have a broad *.json rule
+!discovery-engine/processedJobs.json

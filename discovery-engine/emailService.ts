@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 import path from 'path';
 import dotenv from 'dotenv';
-import type { JobEvaluation } from './aiEvaluator';
+import type { JobEvaluation } from './aiEvaluator.js';
 
 dotenv.config();
 dotenv.config({ path: path.resolve(process.cwd(), 'discovery-engine', '.env') });
