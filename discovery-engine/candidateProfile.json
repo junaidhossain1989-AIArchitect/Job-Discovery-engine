@@ -2,7 +2,8 @@
   "candidate": {
     "name": "Junaid",
     "email": "your-email@example.com",
-    "targetRole": "Solution Architect",
+    "targetRole": ["Software Engineer", "Full Stack Developer", "Solution Architect"],
+    "skills": ["TypeScript", "Node.js", "React", "PostgreSQL","AI Agentic Automation"],
     "targetLocation": "Perth WA",
     "masterResume": "Senior Solution Architect with 12+ years of experience designing enterprise cloud platforms, microservices, AWS architectures, TypeScript/Node.js systems, and Docker/Kubernetes setups. Proficient in TOGAF, system integrations, security compliance, and leading technical teams. Based in Perth, Western Australia."
   },
