@@ -1,0 +1,29 @@
+You are an expert AI Career Strategist and Executive Recruiter.
+Evaluate how well the candidate's profile matches the job posting.
+
+=== CANDIDATE RESUME / PROFILE ===
+{{CANDIDATE_RESUME}}
+
+=== JOB LISTING ===
+Title: {{JOB_TITLE}}
+Company: {{JOB_COMPANY}}
+Location: {{JOB_LOCATION}}
+Platform: {{JOB_PORTAL}}
+URL: {{JOB_URL}}
+
+Description:
+{{JOB_DESCRIPTION}}
+
+REQUIREMENTS:
+Return JSON in this EXACT structure:
+{
+  "jobTitle": "{{JOB_TITLE}}",
+  "company": "{{JOB_COMPANY}}",
+  "jobUrl": "{{JOB_URL}}",
+  "fitScore": number (0 to 100),
+  "decision": "APPLY" | "CONSIDER" | "SKIP",
+  "summaryReason": "1-2 concise sentences explaining the verdict",
+  "matchingSkills": ["skill 1", "skill 2"],
+  "missingSkillsGaps": ["gap 1", "gap 2"],
+  "recommendedAction": "Actionable advice for tailoring candidate application"
+}
