@@ -20,7 +20,11 @@ jobs:
           node-version: '20'
 
       - name: Install Dependencies
-        run: npm ci
+        run: |
+          npm ci || npm install
+          if [ -d "discovery-engine" ]; then
+            cd discovery-engine && (npm ci || npm install)
+          fi
 
       - name: Run Job Engine
         env:
@@ -32,8 +36,7 @@ jobs:
         run: npx tsx discovery-engine/index.ts
 
       - name: Commit Updated Cache (processedJobs.json)
-        run: |         
-
+        run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           if [ -f "discovery-engine/processedJobs.json" ]; then
