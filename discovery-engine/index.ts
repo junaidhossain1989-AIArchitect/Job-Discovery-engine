@@ -5,8 +5,12 @@ import { runScrapers, type ScrapedJob } from './scraperService.js';
 import { evaluateJobFit, type JobEvaluation } from './aiEvaluator.js';
 import { sendJobDigestEmail } from './emailService.js';
 import { getProcessedUrls, markUrlsAsProcessed } from './cacheService.js';
+import pg from 'pg';
 
+// Initialize dotenv first so environment variables are available
 dotenv.config();
+
+const { Client } = pg;
 
 async function executePipeline() {
   console.log('==================================================');
@@ -19,46 +23,34 @@ async function executePipeline() {
   }
   const profileData = JSON.parse(fs.readFileSync(profilePath, 'utf-8'));
 
-  // Step 1: Run Web Scrapers
-  console.log('[Pipeline] Step 1: Scraping target job portals...');
-  const scrapedJobs: ScrapedJob[] = await runScrapers();
-  console.log(`[Pipeline] Retrieved ${scrapedJobs.length} raw listings.\n`);
+  // Initialize Postgres Client
+  const client = new Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
 
-  // Step 2: Deduplication Filter
-  const processedUrls = getProcessedUrls();
-  const newJobs = scrapedJobs.filter((job) => !processedUrls.includes(job.url));
-  console.log(`[Pipeline] Deduplication: ${scrapedJobs.length - newJobs.length} skipped, ${newJobs.length} new listings to evaluate.\n`);
+  await client.connect();
 
-  if (newJobs.length === 0) {
-    console.log('[Pipeline] No new job listings found. Pipeline execution complete.');
-    return;
+  try {
+    // 1. Run your scrapers to get jobs
+    const rawJobs = await runScrapers();
+    
+    // 2. Loop through evaluated/matching jobs and insert into Postgres
+    for (const job of rawJobs) {
+      // Evaluate job logic here...
+      const fitScore = 80; // Example fit score from your AI evaluation logic
+
+      await client.query(
+        `INSERT INTO jobs (title, company, fit_score, url) 
+         VALUES ($1, $2, $3, $4) 
+         ON CONFLICT (url) DO NOTHING`,
+        [job.title, job.company, fitScore, job.url]
+      );
+    }
+  } finally {
+    // Always close the database connection when done
+    await client.end();
   }
-
-  // Step 3: Run AI Evaluations
-  console.log('[Pipeline] Step 3: Evaluating matches via Gemini AI...');
-  const evaluations: JobEvaluation[] = [];
-
-  for (const job of newJobs) {
-    const result = await evaluateJobFit(job, profileData.candidate.masterResume);
-    evaluations.push(result);
-  }
-
-  console.log(`[Pipeline] Completed ${evaluations.length} job evaluations.\n`);
-
-  // Step 4: Dispatch Digest Email
-  console.log('[Pipeline] Step 4: Triggering email service...');
-  await sendJobDigestEmail(evaluations);
-
-  // Step 5: Update Cache Store
-  const evaluatedUrls = newJobs.map((job) => job.url);
-  markUrlsAsProcessed(evaluatedUrls);
-  console.log(`[Pipeline] Cached ${evaluatedUrls.length} newly processed job signatures.`);
-
-  console.log('\n==================================================');
-  console.log('✅ End-to-end pipeline run completed.');
-  console.log('==================================================');
 }
 
-executePipeline().catch((err) => {
-  console.error('❌ Pipeline failed:', err);
-});
+executePipeline().catch(console.error);
